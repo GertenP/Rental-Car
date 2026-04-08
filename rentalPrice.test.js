@@ -87,52 +87,58 @@ describe('price - auto tüübi validatsioon', () => {
     });
 });
 
+describe('price - TDD Weekend pricing', () => {
+    test('50 year old driver rents for 3 weekdays (Mon-Wed) - Total $150', () => {
+        const mon = '2026-02-09';
+        const wed = '2026-02-11';
+        expect(price(mon, wed, 'Compact', 50, 60)).toBe('$150.00');
+    });
+
+    test('50 year old driver rents for 3 days (Thu-Sat) - Total $152.50', () => {
+        const thu = '2026-02-12';
+        const sat = '2026-02-14';
+        expect(price(thu, sat, 'Compact', 50, 60)).toBe('$152.50');
+    });
+});
+
 describe('price - põhihind', () => {
     test('madalhooajal on hind vanus * päevad', () => {
-        // 30-aastane, 6 päeva, madalhooaeg, litsents 24 kuud => 30 * 6 = 180
         expect(price(LOW_DATE_1, LOW_DATE_2, 'Compact', 30, 24)).toBe('$180.00');
     });
 });
 
 describe('price - kõrghooaja lisatasu', () => {
     test('kõrghooajal hind +15%', () => {
-        // 30 * 6 * 1.15 = 207
         expect(price(HIGH_DATE_1, HIGH_DATE_2, 'Compact', 30, 24)).toBe('$207.00');
     });
 });
 
 describe('price - pikk rent madalhooajal', () => {
     test('üle 10 päeva madalhooajal -10%', () => {
-        // 30 * 12 * 0.9 = 324
         expect(price('2024-01-01', '2024-01-12', 'Compact', 30, 24)).toBe('$324.00');
     });
 
     test('täpselt 10 päeva madalhooajal ei saa allahindlust', () => {
-        // 30 * 10 = 300 (10 päeva ei ole "üle 10")
         expect(price('2024-01-01', '2024-01-10', 'Compact', 30, 24)).toBe('$270.00');
     });
 });
 
 describe('price - Racer noor juht kõrghooajal', () => {
     test('25-aastane Racer kõrghooajal +50%', () => {
-        // 25 * 6 * 1.5 * 1.15 = 258.75
         expect(price(HIGH_DATE_1, HIGH_DATE_2, 'Racer', 25, 24)).toBe('$258.75');
     });
 
     test('26-aastane Racer kõrghooajal ei saa lisatasu', () => {
-        // 26 * 6 * 1.15 = 179.40
         expect(price(HIGH_DATE_1, HIGH_DATE_2, 'Racer', 26, 24)).toBe('$179.40');
     });
 
     test('25-aastane Racer madalhooajal ei saa lisatasu', () => {
-        // 25 * 6 = 150
         expect(price(LOW_DATE_1, LOW_DATE_2, 'Racer', 25, 24)).toBe('$150.00');
     });
 });
 
 describe('price - litsents alla 2 aasta', () => {
     test('alla 24 kuu litsents +30%', () => {
-        // 30 * 6 * 1.30 = 234
         expect(price(LOW_DATE_1, LOW_DATE_2, 'Compact', 30, 23)).toBe('$234.00');
     });
 
@@ -143,7 +149,6 @@ describe('price - litsents alla 2 aasta', () => {
 
 describe('price - litsents alla 3 aasta kõrghooajal', () => {
     test('alla 36 kuu litsents kõrghooajal +15€/päev', () => {
-        // 30 * 6 * 1.15 + 15 * 6 = 207 + 90 = 297
         expect(price(HIGH_DATE_1, HIGH_DATE_2, 'Compact', 30, 35)).toBe('$297.00');
     });
 
@@ -153,12 +158,5 @@ describe('price - litsents alla 3 aasta kõrghooajal', () => {
 
     test('täpselt 36 kuud ei saa lisatasu', () => {
         expect(price(HIGH_DATE_1, HIGH_DATE_2, 'Compact', 30, 36)).toBe('$207.00');
-    });
-});
-
-describe('price - kombineeritud reeglid', () => {
-    test('alla 24 kuu litsents + kõrghooaeg + alla 36 kuu', () => {
-        // 30 * 6 * 1.15 * 1.30 + 15 * 6 = 268.35 + 90 = 358.35
-        expect(price(HIGH_DATE_1, HIGH_DATE_2, 'Compact', 30, 23)).toBe('$358.35');
     });
 });

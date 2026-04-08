@@ -18,6 +18,7 @@ const NEW_LICENSE_THRESHOLD_MONTHS = 24;
 const NEWER_LICENSE_THRESHOLD_MONTHS = 36;
 const NEWER_LICENSE_HIGH_SEASON_DAILY_SURCHARGE = 15;
 
+const WEEKEND_MULTIPLIER = 1.05;
 
 function price(pickupDate, dropoffDate, type, age, licenseAgeMonths) {
     if (age < MIN_RENTAL_AGE) {
@@ -41,7 +42,20 @@ function price(pickupDate, dropoffDate, type, age, licenseAgeMonths) {
     const days = getDays(pickupDate, dropoffDate);
     const season = getSeason(pickupDate, dropoffDate);
 
-    let rentalPrice = age * days;
+    let rentalPrice = 0;
+    const start = new Date(pickupDate);
+
+    for (let i = 0; i < days; i++) {
+        let currentDay = new Date(start);
+        currentDay.setDate(start.getDate() + i);
+        let dayOfWeek = currentDay.getDay();
+        let dailyRate = age;
+
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+            dailyRate *= WEEKEND_MULTIPLIER;
+        }
+        rentalPrice += dailyRate;
+    }
 
     if (carClass === "Racer" && age <= YOUNG_RACER_AGE_LIMIT && season === "High") {
         rentalPrice *= RACER_YOUNG_DRIVER_MULTIPLIER;
@@ -70,14 +84,12 @@ function getDays(pickupDate, dropoffDate) {
     const ONE_DAY_MS = 24 * 60 * 60 * 1000;
     const firstDate = new Date(pickupDate);
     const secondDate = new Date(dropoffDate);
-
     return Math.round(Math.abs((firstDate - secondDate) / ONE_DAY_MS)) + 1;
 }
 
 function getSeason(pickupDate, dropoffDate) {
     const pickup = new Date(pickupDate);
     const dropoff = new Date(dropoffDate);
-
     const pickupMonth = pickup.getMonth();
     const dropoffMonth = dropoff.getMonth();
 
